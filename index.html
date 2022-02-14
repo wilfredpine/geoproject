@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!--Bootstrap-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- GEO API -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <!--JQuery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+
+    <div class="row p-5">
+        <div class="col-12">
+            <h1>GeoCoding & Reverse GeoCoding <small>| Source API: <a href="https://www.geoapify.com/">https://www.geoapify.com/</a></small></h1>
+            <hr>
+        </div>
+
+        <div class="col-6">
+            <div class="col-12">
+                <form method="POST" action="">
+                    <div class="col-sm-12">
+                        <h3><a href="https://github.com/wilfredpine/philippine-address-selector">Address Selector - Philippines</a></h3>
+                    </div>
+                    <hr>
+                    <div class="col-sm-12 ">
+                        <label class="form-label">Region *</label>
+                        <select name="region" class="form-control form-control-sm" id="region"></select>
+                        <input type="hidden" class="form-control form-control-sm" name="region_text" id="region-text" required>
+                    </div>
+                    <div class="col-sm-12 ">
+                        <label class="form-label">Province *</label>
+                        <select name="province" class="form-control form-control-sm" id="province"></select>
+                        <input type="hidden" class="form-control form-control-sm" name="province_text" id="province-text" required>
+                    </div>
+                    <div class="col-sm-12 ">
+                        <label class="form-label">City / Municipality *</label>
+                        <select name="city" class="form-control form-control-sm" id="city"></select>
+                        <input type="hidden" class="form-control form-control-sm" name="city_text" id="city-text" required>
+                    </div>
+                    <div class="col-sm-12 ">
+                        <label class="form-label">Barangay *</label>
+                        <select name="barangay" class="form-control form-control-sm" id="barangay"></select>
+                        <input type="hidden" class="form-control form-control-sm" name="barangay_text" id="barangay-text" required>
+                    </div>
+                    <div class="col-sm-12 ">
+                        <label for="street-text" class="form-label">Street (Optional)</label>
+                        <input type="text" class="form-control form-control-md" name="street_text" id="street-text">
+                    </div>
+                    <div class="col-sm-6 float-left">
+                        <label for="long" class="form-label">Longitude</label>
+                        <input type="text" class="form-control form-control-sm" name="long" id="long" required>
+                    </div>
+                    <div class="col-sm-6 float-left">
+                        <label for="lat" class="form-label">Latitude</label>
+                        <input type="text" class="form-control form-control-sm" name="lat" id="lat" required>
+                    </div>
+                    <div class="col-sm-12 ">
+                        <label for="place_id" class="form-label">Place Id</label>
+                        <input type="text" class="form-control form-control-sm" name="place_id" id="place_id" required>
+                    </div>
+                    <div class="col-sm-12 mt-3">
+                        <input type="submit" class="btn btn-success" name="submit">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div id="map" style="height: 570px; width: 700px;" class="border"></div>
+        </div>
+
+        <div class="col-12 text-center">
+            <hr>
+            <h6>Follow me on GitHub: <a href="https://github.com/wilfredpine">Wilfred Pine</a></small>
+            </h6>
+            <hr>
+        </div>
+
+    </div>
+
+
+
+
+    <!-- <script src="ph-address-selector.js"></script> -->
+
+</body>
+
+</html>
+
+<script>
+    var my_handlers = {
+        // fill province
+        fill_provinces: function() {
+            //selected region
+            var region_code = $(this).val();
+
+            // set selected text to input
+            var region_text = $(this).find("option:selected").text();
+            let region_input = $('#region-text');
+            region_input.val(region_text);
+            //clear province & city & barangay input
+            $('#province-text').val('');
+            $('#city-text').val('');
+            $('#barangay-text').val('');
+
+            //province
+            let dropdown = $('#province');
+            dropdown.empty();
+            dropdown.append('<option selected="true" disabled>Choose State/Province</option>');
+            dropdown.prop('selectedIndex', 0);
+
+            //city
+            let city = $('#city');
+            city.empty();
+            city.append('<option selected="true" disabled></option>');
+            city.prop('selectedIndex', 0);
+
+            //barangay
+            let barangay = $('#barangay');
+            barangay.empty();
+            barangay.append('<option selected="true" disabled></option>');
+            barangay.prop('selectedIndex', 0);
+
+            // filter & fill
+            var url = 'ph-json/province.json';
+            $.getJSON(url, function(data) {
+                var result = data.filter(function(value) {
+                    return value.region_code == region_code;
+                });
+
+                result.sort(function(a, b) {
+                    return a.province_name.localeCompare(b.province_name);
+                });
+
+                $.each(result, function(key, entry) {
+                    dropdown.append($('<option></option>').attr('value', entry.province_code).text(entry.province_name));
+                })
+
+            });
+        },
+        // fill city
+        fill_cities: function() {
+            //selected province
+            var province_code = $(this).val();
+
+            // set selected text to input
+            var province_text = $(this).find("option:selected").text();
+            let province_input = $('#province-text');
+            province_input.val(province_text);
+            //clear city & barangay input
+            $('#city-text').val('');
+            $('#barangay-text').val('');
+
+            //city
+            let dropdown = $('#city');
+            dropdown.empty();
+            dropdown.append('<option selected="true" disabled>Choose city/municipality</option>');
+            dropdown.prop('selectedIndex', 0);
+
+            //barangay
+            let barangay = $('#barangay');
+            barangay.empty();
+            barangay.append('<option selected="true" disabled></option>');
+            barangay.prop('selectedIndex', 0);
+
+            // filter & fill
+            var url = 'ph-json/city.json';
+            $.getJSON(url, function(data) {
+                var result = data.filter(function(value) {
+                    return value.province_code == province_code;
+                });
+
+                result.sort(function(a, b) {
+                    return a.city_name.localeCompare(b.city_name);
+                });
+
+                $.each(result, function(key, entry) {
+                    dropdown.append($('<option></option>').attr('value', entry.city_code).text(entry.city_name));
+                })
+
+            });
+        },
+        // fill barangay
+        fill_barangays: function() {
+            // selected barangay
+            var city_code = $(this).val();
+
+            // set selected text to input
+            var city_text = $(this).find("option:selected").text();
+            let city_input = $('#city-text');
+            city_input.val(city_text);
+            //clear barangay input
+            $('#barangay-text').val('');
+
+            // barangay
+            let dropdown = $('#barangay');
+            dropdown.empty();
+            dropdown.append('<option selected="true" disabled>Choose barangay</option>');
+            dropdown.prop('selectedIndex', 0);
+
+            // filter & Fill
+            var url = 'ph-json/barangay.json';
+            $.getJSON(url, function(data) {
+                var result = data.filter(function(value) {
+                    return value.city_code == city_code;
+                });
+
+                result.sort(function(a, b) {
+                    return a.brgy_name.localeCompare(b.brgy_name);
+                });
+
+                $.each(result, function(key, entry) {
+                    dropdown.append($('<option></option>').attr('value', entry.brgy_code).text(entry.brgy_name));
+                })
+
+            });
+        },
+
+        onchange_barangay: function() {
+            // set selected text to input
+            var barangay_text = $(this).find("option:selected").text();
+            let barangay_input = $('#barangay-text');
+            barangay_input.val(barangay_text);
+
+
+
+            // *********Start GeoCoding*******************
+            var requestOptions = {
+                method: 'GET',
+            };
+            var name = barangay_text;
+            //housenumber
+            //street
+            //var postcode = "5200";
+            var city = $('#city-text').val();
+            var state = $('#province-text').val();
+            var country = "Philippines";
+            var limit = "1";
+            var format = "json";
+            fetch("https://api.geoapify.com/v1/geocode/search?name=" + name + "&city=" + city + "&state=" + state + "&country=" + country + "&limit=" + limit + "&format=" + format + "&apiKey=f9a06affc1b943b5ae052229d7223a9a", requestOptions)
+                .then(function(response) {
+                    return response.json();
+                }).then(function(result) {
+                    /* start to retrieve */
+                    var lat = result.results[0].lat;
+                    var lon = result.results[0].lon;
+                    $('#lat').val(lat);
+                    $('#long').val(lon);
+                    $('#place_id').val(result.results[0].place_id);
+                    console.log(result.results[0].place_id)
+                    console.log(lat)
+                    console.log(lon)
+                    console.log(result.results[0])
+                    my_map();
+                }).catch(error => console.log('error', error));
+            // *********End GeoCoding*******************
+
+
+        },
+
+    };
+
+
+    $(function() {
+        // events
+        $('#region').on('change', my_handlers.fill_provinces);
+        $('#province').on('change', my_handlers.fill_cities);
+        $('#city').on('change', my_handlers.fill_barangays);
+        $('#barangay').on('change', my_handlers.onchange_barangay);
+
+        // load region
+        let dropdown = $('#region');
+        dropdown.empty();
+        dropdown.append('<option selected="true" disabled>Choose Region</option>');
+        dropdown.prop('selectedIndex', 0);
+        const url = 'ph-json/region.json';
+        // Populate dropdown with list of regions
+        $.getJSON(url, function(data) {
+            $.each(data, function(key, entry) {
+                dropdown.append($('<option></option>').attr('value', entry.region_code).text(entry.region_name));
+            })
+        });
+
+    });
+</script>
+
+<script>
+    function my_map() {
+        // ************REVERSE GEOCODING*****************
+        // Get Latitude
+        var getlatitude = $('#lat').val();
+        var getlongitude = $('#long').val();
+
+        var map = L.map('map', {
+            crs: L.CRS.EPSG4326
+        }).setView([getlatitude, getlongitude], 10);
+
+        //https://leafletjs.com/examples/wms/wms.html______________
+        var wmsLayer = L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
+            layers: 'TOPO-OSM-WMS'
+        }).addTo(map);
+
+        // marker
+        const markerIcon = L.icon({
+            iconUrl: `https://api.geoapify.com/v1/icon?size=xx-large&type=awesome&color=%233e9cfe&icon=paw&apiKey=f9a06affc1b943b5ae052229d7223a9a`,
+            iconSize: [31, 46], // size of the icon
+            iconAnchor: [15.5, 42], // point of the icon which will correspond to marker's location
+            popupAnchor: [0, -45] // point from which the popup should open relative to the iconAnchor
+        });
+
+        L.marker([getlatitude, getlongitude], {
+                icon: markerIcon
+            }).addTo(map)
+            .bindPopup('A pretty CSS3 popup.<br> Easily customizable. <a href="">hi</a>')
+            .openPopup();
+        //******************************************
+        function onMapClick(e) {
+            // user clicked on a map
+            map.setView([getlatitude, getlongitude], 14)
+
+            fetch(`https://api.geoapify.com/v1/geocode/reverse?lat=${e.latlng.lat}&lon=${e.latlng.lng}&apiKey=f9a06affc1b943b5ae052229d7223a9a`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.features.length) {
+                        const address = result.features[0].properties.formatted;
+                        //L.popup().setLatLng(e.latlng).setContent(address).openOn(map);
+                        //
+                        // marker
+                        const markerIcon = L.icon({
+                            iconUrl: `https://api.geoapify.com/v1/icon?size=xx-large&type=awesome&color=%233e9cfe&icon=paw&apiKey=f9a06affc1b943b5ae052229d7223a9a`,
+                            iconSize: [31, 46], // size of the icon
+                            iconAnchor: [15.5, 42], // point of the icon which will correspond to marker's location
+                            popupAnchor: [0, -45] // point from which the popup should open relative to the iconAnchor
+                        });
+                        L.marker([result.features[0].properties.lat, result.features[0].properties.lon], {
+                                icon: markerIcon
+                            }).addTo(map)
+                            .bindPopup(address + "( Latitude: " + result.features[0].properties.lat + ", Longitude: " + result.features[0].properties.lon + ")")
+                            .openPopup();
+                        //
+                        //console.log(result.features[0].properties.lat);
+                        //$('#lat').val(result.features[0].properties.lat);
+                        //$('#long').val(result.features[0].properties.lon);
+                        //$('#place_id').val(result.features[0].properties.place_id);
+                    } else {
+                        L.popup().setLatLng(e.latlng).setContent("No address found").openOn(map);
+                    }
+                });
+        }
+        map.on('click', onMapClick);
+    }
+</script>

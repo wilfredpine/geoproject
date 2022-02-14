@@ -1,0 +1,42 @@
+<html>
+
+<head>
+    <title>MapTiles+Map Libre GL</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.skypack.dev/maplibre-gl/dist/maplibre-gl.css">
+
+
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        #my-map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="my-map"></div>
+    <script type="text/javascript">
+        import {
+            Map,
+            NavigationControl
+        } from 'https://cdn.skypack.dev/maplibre-gl';
+
+        // Get your own API Key on https://myprojects.geoapify.com
+        var myAPIKey = "YOUR_API_KEY_HERE";
+
+        var map = new Map({
+            container: 'my-map',
+            style: `https://maps.geoapify.com/v1/styles/klokantech-basic/style.json?apiKey=${myAPIKey}`,
+        });
+        map.addControl(new NavigationControl());
+    </script>
+</body>
+
+</html>

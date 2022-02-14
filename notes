@@ -1,0 +1,33 @@
+Not this
+https://api.geocodify.com/v2/reverse?api_key=e2e577176ffd1049a5cb04eff8d49375f7c594a3&lat=13.348817&lng=121.189434
+https://api.geocodify.com/v2/geocode?api_key=e2e577176ffd1049a5cb04eff8d49375f7c594a3&q=masipit,%20calapan%20city,%20oriental%20mindoro
+
+
+
+Eto OK
+https://www.geoapify.com/
+https://www.geoapify.com/pricing
+https://myprojects.geoapify.com/projects
+https://apidocs.geoapify.com/docs/geocoding/reverse-geocoding/#code-samples
+
+Key: f9a06affc1b943b5ae052229d7223a9a
+
+Map
+
+https://leafletjs.com/reference.html#map-example
+https://github.com/Leaflet/Leaflet
+
+Alternative Map
+
+https://maplibre.org/maplibre-gl-js-docs/example/popup-on-hover/
+https://github.com/maplibre/maplibre-gl-js
+
+
+TIPS:
+
+- ilagay ang API sa Database, para pwede palitan 
+- wag gamitin sa landing page, login, or yung page na default kapag inopen ang website. Para makatipid sa credit limit.
+
+Security:
+- 2FA
+- Recapcha

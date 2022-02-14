@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!--Bootstrap-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- GEO API -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <!--JQuery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div id="map" style="height: 400px; width: 800px;"></div>
+    <script>
+        // initialize the map on the "map" div with a given center and zoom
+        //var map = L.map('map', {
+        //    center: [51.505, -0.09],
+        //   zoom: 13
+        //});
+
+        //lat=13.348817&lng=121.189434
+        //const mymap = L.map('map').setView([13.348817, 121.189434], 16);
+
+        var map = L.map('map', {
+            crs: L.CRS.EPSG4326
+        }).setView([13.348817, 121.189434], 13);
+
+        //https://leafletjs.com/examples/wms/wms.html______________
+        var wmsLayer = L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
+            layers: 'TOPO-OSM-WMS'
+        }).addTo(map);
+        /*var wmsLayer = L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
+            layers: 'SRTM30-Colored-Hillshade'
+        }).addTo(map);
+        var topographyAndPlaces = L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
+            layers: 'TOPO-WMS,OSM-Overlay-WMS'
+        }).addTo(map);
+        var basemaps = {
+            Topography: L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
+                layers: 'TOPO-WMS'
+            }),
+
+            Places: L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
+                layers: 'OSM-Overlay-WMS'
+            }),
+
+            'Topography, then places': L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
+                layers: 'TOPO-WMS,OSM-Overlay-WMS'
+            }),
+
+            'Places, then topography': L.tileLayer.wms('http://ows.mundialis.de/services/service?', {
+                layers: 'OSM-Overlay-WMS,TOPO-WMS'
+            })
+        };
+        L.control.layers(basemaps).addTo(map);
+        basemaps.Topography.addTo(map);*/
+
+        //_________________________________________________________
+        // Default
+        //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        //}).addTo(map);
+
+        /*L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);*/
+        //____________________________________________________
+
+        const markerIcon = L.icon({
+            iconUrl: `https://api.geoapify.com/v1/icon?size=xx-large&type=awesome&color=%233e9cfe&icon=paw&apiKey=f9a06affc1b943b5ae052229d7223a9a`,
+            iconSize: [31, 46], // size of the icon
+            iconAnchor: [15.5, 42], // point of the icon which will correspond to marker's location
+            popupAnchor: [0, -45] // point from which the popup should open relative to the iconAnchor
+        });
+
+        L.marker([13.348817, 121.189434], {
+                icon: markerIcon
+            }).addTo(map)
+            .bindPopup('A pretty CSS3 popup.<br> Easily customizable. <a href="">hi</a>')
+            .openPopup();
+
+        L.marker([12.348817, 120.189434]).addTo(map)
+            .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
+            .openPopup();
+
+
+        function onMapClick(e) {
+            // user clicked on a map
+            fetch(`https://api.geoapify.com/v1/geocode/reverse?lat=${e.latlng.lat}&lon=${e.latlng.lng}&apiKey=f9a06affc1b943b5ae052229d7223a9a`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.features.length) {
+                        const address = result.features[0].properties.formatted;
+                        L.popup().setLatLng(e.latlng).setContent(address).openOn(map);
+                    } else {
+                        L.popup().setLatLng(e.latlng).setContent("No address found").openOn(map);
+                    }
+                });
+        }
+
+        map.on('click', onMapClick);
+    </script>
+
+    <!-- RASTER MAP -->
+    <script type="text/javascript">
+        var map = L.map("my-map").setView([13.348817, 121.189434], 10);
+
+        // Get your own API Key on https://myprojects.geoapify.com
+        var myAPIKey = "sasasasasasa";
+
+        // Retina displays require different mat tiles quality
+        var isRetina = L.Browser.retina;
+
+        var baseUrl =
+            "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey={apiKey}";
+        var retinaUrl =
+            "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}@2x.png?apiKey={apiKey}";
+
+        // Add map tiles layer. Set 20 as the maximal zoom and provide map data attribution.
+        L.tileLayer(isRetina ? retinaUrl : baseUrl, {
+            attribution: 'Powered by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | © OpenStreetMap <a href="https://www.openstreetmap.org/copyright" target="_blank">contributors</a>',
+            apiKey: myAPIKey,
+            maxZoom: 20,
+            id: "osm-bright",
+        }).addTo(map);
+    </script>
+
+</body>
+
+</html>
