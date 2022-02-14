@@ -28,6 +28,6 @@ TIPS:
 - ilagay ang API sa Database, para pwede palitan 
 - wag gamitin sa landing page, login, or yung page na default kapag inopen ang website. Para makatipid sa credit limit.
 
-Security:
+Maglagay ng Security:
 - 2FA
 - Recapcha
